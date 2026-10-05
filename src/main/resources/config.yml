@@ -1,0 +1,10 @@
+# Temporary /ignore entries expire automatically after this many days.
+# Set to 0 to retain temporary ignores until manually removed (also across restarts).
+temporary-ignore-days: 7
+
+# Minimum delay between private messages. Set to 0 to disable.
+private-message-cooldown-millis: 500
+
+# Makes player names in global chat suggest /msg <name> when clicked.
+clickable-chat-names: true
+

@@ -1,0 +1,12 @@
+name: ChatTestProbe
+version: '1.0.0'
+main: com.nordfjell.nordchat.test.ChatTestProbe
+api-version: '26.2'
+depend: [NordChat]
+commands:
+  ctest:
+    description: Local fixture diagnostic command.
+    permission: ctest.console
+permissions:
+  ctest.console:
+    default: op

@@ -1,0 +1,91 @@
+name: NordChat
+version: '0.1.3'
+main: com.nordfjell.nordchat.NordChatPlugin
+api-version: '26.2'
+author: Nord Fjell
+description: Lightweight 2b2t-inspired chat controls for Nord Fjell.
+
+commands:
+  msg:
+    description: Send a private message.
+    usage: /msg <player> <message>
+    aliases: [whisper, pm, w]
+    permission: nordchat.msg
+  reply:
+    description: Reply to the last player who messaged you.
+    usage: /reply <message>
+    aliases: [r]
+    permission: nordchat.reply
+  last:
+    description: Message the last player you messaged.
+    usage: /last <message>
+    permission: nordchat.last
+  ignore:
+    description: Temporarily ignore or unignore a player.
+    usage: /ignore <player>
+    permission: nordchat.ignore
+  ignorehard:
+    description: Permanently ignore or unignore a player.
+    usage: /ignorehard <player>
+    permission: nordchat.ignorehard
+  ignorelist:
+    description: Show your ignore lists.
+    usage: /ignorelist
+    permission: nordchat.ignorelist
+  ignoredeathmsgs:
+    description: Toggle death messages from one player.
+    usage: /ignoredeathmsgs <player>
+    permission: nordchat.ignoredeathmsgs
+  togglechat:
+    description: Toggle visibility of global player chat.
+    usage: /togglechat
+    permission: nordchat.togglechat
+  toggleprivatemsgs:
+    description: Toggle incoming private messages.
+    usage: /toggleprivatemsgs
+    permission: nordchat.toggleprivatemsgs
+  toggledeathmsgs:
+    description: Toggle death messages until disconnecting.
+    usage: /toggledeathmsgs
+    permission: nordchat.toggledeathmsgs
+  toggledeathmsgshard:
+    description: Persistently toggle death messages.
+    usage: /toggledeathmsgshard
+    permission: nordchat.toggledeathmsgshard
+  kill:
+    description: Kill only your own player character.
+    usage: /kill
+    permission: nordchat.kill
+  nordchat:
+    description: NordChat administration.
+    usage: /nordchat reload
+    permission: nordchat.admin
+
+permissions:
+  nordchat.msg:
+    default: true
+  nordchat.reply:
+    default: true
+  nordchat.last:
+    default: true
+  nordchat.ignore:
+    default: true
+  nordchat.ignorehard:
+    default: true
+  nordchat.ignorelist:
+    default: true
+  nordchat.ignoredeathmsgs:
+    default: true
+  nordchat.togglechat:
+    default: true
+  nordchat.toggleprivatemsgs:
+    default: true
+  nordchat.toggledeathmsgs:
+    default: true
+  nordchat.toggledeathmsgshard:
+    default: true
+  nordchat.kill:
+    default: true
+  nordchat.admin:
+    default: op
+
