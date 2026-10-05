@@ -9,6 +9,7 @@ import java.util.*;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.events.*;
 
 /** Main-thread submissions, immutable snapshots, one writer. No Bukkit/Player references. */
 final class PreferenceStorage {
@@ -48,7 +49,7 @@ final class PreferenceStorage {
         try {
             String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                     .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(Files.readAllBytes(file))).toString();
-            Object loaded = yaml().load(text);
+            Object loaded = yaml().load(normalizeEmptyAliases(text));
             Map<?, ?> root = loaded == null ? Map.of() : map(loaded);
             for (Object key : root.keySet()) if (!Set.of("names", "players").contains(key))
                 throw new IOException("Unknown preference root");
@@ -93,6 +94,42 @@ final class PreferenceStorage {
             names.putAll(loadedNames); players.putAll(loadedPlayers); playerCount = all.size();
         } catch (IOException e) { throw e; }
         catch (RuntimeException e) { throw new IOException("Invalid preference YAML", e); }
+    }
+    /** Expand only parser-identified aliases to untagged empty collections.
+     * No objects are constructed here, and the strict loader still limits all
+     * non-empty/recursive aliases, tags, depth and schema. The file is not written.
+     */
+    static String normalizeEmptyAliases(String text) {
+        Map<String, String> empty = new HashMap<>();
+        CollectionStartEvent candidate = null;
+        StringBuilder output = null;
+        int copied = 0, characterCursor = 0, codePointCursor = 0;
+        for (Event event : yaml().parse(new StringReader(text))) {
+            if (candidate != null) {
+                boolean sequence = candidate instanceof SequenceStartEvent && event instanceof SequenceEndEvent;
+                boolean mapping = candidate instanceof MappingStartEvent && event instanceof MappingEndEvent;
+                String defaultTag = sequence ? "tag:yaml.org,2002:seq" : "tag:yaml.org,2002:map";
+                if ((sequence || mapping) && (candidate.getTag() == null || defaultTag.equals(candidate.getTag())))
+                    empty.put(candidate.getAnchor(), sequence ? "[]" : "{}");
+                candidate = null;
+            }
+            if (event instanceof AliasEvent alias) {
+                String replacement = empty.get(alias.getAnchor());
+                if (replacement == null) continue;
+                int startIndex = event.getStartMark().getIndex(), endIndex = event.getEndMark().getIndex();
+                // SnakeYAML marks count Unicode code points, not UTF-16 characters.
+                int start = text.offsetByCodePoints(characterCursor, startIndex - codePointCursor);
+                int end = text.offsetByCodePoints(start, endIndex - startIndex);
+                if (output == null) output = new StringBuilder(text.length());
+                output.append(text, copied, start).append(replacement);
+                copied = end; characterCursor = end; codePointCursor = endIndex;
+            } else if (event instanceof NodeEvent node && node.getAnchor() != null) {
+                // A later definition of the same anchor must invalidate the old one.
+                empty.remove(node.getAnchor());
+                if (event instanceof CollectionStartEvent collection) candidate = collection;
+            }
+        }
+        return output == null ? text : output.append(text, copied, text.length()).toString();
     }
     private static Map<?, ?> map(Object value) throws IOException {
         if (!(value instanceof Map<?, ?> result)) throw new IOException("Expected preference section");
@@ -184,8 +221,10 @@ final class PreferenceStorage {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("chat-visible", prefs.chatVisible()); values.put("private-messages-visible", prefs.privateMessagesVisible());
             values.put("death-messages-visible", prefs.deathMessagesVisible());
-            values.put("hard-ignored", prefs.hardIgnores().stream().map(UUID::toString).sorted().toList());
-            values.put("ignored-death-messages", prefs.ignoredDeathMessages().stream().map(UUID::toString).sorted().toList());
+            // Stream.toList() may share the same singleton for every empty list.
+            // Distinct containers prevent the dumper from emitting hundreds of aliases.
+            values.put("hard-ignored", new ArrayList<>(prefs.hardIgnores().stream().map(UUID::toString).sorted().toList()));
+            values.put("ignored-death-messages", new ArrayList<>(prefs.ignoredDeathMessages().stream().map(UUID::toString).sorted().toList()));
             Map<String, Long> temporary = new TreeMap<>();
             prefs.temporaryIgnores().forEach((target, expiry) -> temporary.put(target.toString(), expiry));
             values.put("temporary-ignored", temporary); playerSection.put(id.toString(), values);
