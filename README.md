@@ -1,5 +1,8 @@
 # NordChat
 
+> Release build and installation requirements: see [BUILDING.md](BUILDING.md).
+> Older local paths below describe historical test fixtures, not the release build.
+
 Lightweight Paper 26.2 chat controls built for Nord Fjell. It has no PacketEvents,
 ProtocolLib, Vault, LuckPerms API, database, metrics, update checker, or network calls.
 

@@ -1,5 +1,5 @@
 name: NordChat
-version: '0.1.3'
+version: '${project.version}'
 main: com.nordfjell.nordchat.NordChatPlugin
 api-version: '26.2'
 author: Nord Fjell
