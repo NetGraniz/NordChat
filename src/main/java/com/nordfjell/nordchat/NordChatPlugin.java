@@ -159,11 +159,14 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
         UUID deadPlayerId = event.getPlayer().getUniqueId();
         event.deathMessage(null);
 
-        for (Player viewer : Bukkit.getOnlinePlayers()) {
+        for (ChatSession session : sessions.values()) {
+            Player viewer = session.player();
+            viewer.getScheduler().execute(this,() -> {
+            if (!viewer.isOnline() || sessions.get(viewer.getUniqueId()) != session) return;
             PlayerPreferences preferences = dataStore.getLoaded(viewer.getUniqueId());
             if (preferences == null) {
                 viewer.sendMessage(deathMessage);
-                continue;
+                return;
             }
             boolean visible = preferences.arePersistentDeathMessagesVisible()
                     && !sessionDeathMessagesHidden.contains(viewer.getUniqueId())
@@ -171,6 +174,7 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
             if (visible) {
                 viewer.sendMessage(deathMessage);
             }
+            },null,1L);
         }
         Bukkit.getConsoleSender().sendMessage(deathMessage);
     }
@@ -260,29 +264,36 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
             return;
         }
 
-        PlayerPreferences targetPreferences = dataStore.load(target.getUniqueId(), target.getName());
         UUID senderId = sender instanceof Player player ? player.getUniqueId() : null;
+        String senderName = sender instanceof Player player ? player.getName() : "Console";
+        Runnable disconnected = () -> feedback(sender,error("That player is no longer online."));
+        if (!target.getScheduler().execute(this,() -> {
+        ChatSession current = sessions.get(target.getUniqueId());
+        if (!target.isOnline() || current == null || current.player() != target
+                || (sender instanceof Player player && !currentSession(player))) { disconnected.run(); return; }
+        PlayerPreferences targetPreferences = dataStore.load(target.getUniqueId(), target.getName());
         if (!targetPreferences.arePrivateMessagesVisible()) {
-            sender.sendMessage(error("That player has private messages disabled."));
+            feedback(sender,error("That player has private messages disabled."));
             return;
         }
         if (senderId != null && targetPreferences.isIgnoring(senderId, System.currentTimeMillis())) {
-            sender.sendMessage(error("That player is not accepting messages from you."));
+            feedback(sender,error("That player is not accepting messages from you."));
             return;
         }
 
         if (senderId != null && privateMessageCooldownMillis > 0L) {
+            synchronized (lastPrivateMessageAt) {
             long now = System.nanoTime();
             Long previous = lastPrivateMessageAt.get(senderId);
             if (previous != null && now - previous < privateMessageCooldownMillis * 1_000_000L) {
                 long remaining = Math.max(1L, (privateMessageCooldownMillis * 1_000_000L - (now - previous)) / 1_000_000L);
-                sender.sendMessage(error("Please wait " + remaining + " ms before messaging again."));
+                feedback(sender,error("Please wait " + remaining + " ms before messaging again."));
                 return;
             }
             lastPrivateMessageAt.put(senderId, now);
+            }
         }
 
-        String senderName = sender instanceof Player player ? player.getName() : "Console";
         Component incoming = Component.text("[", NamedTextColor.DARK_GRAY)
                 .append(Component.text(senderName, NamedTextColor.AQUA)
                         .clickEvent(ClickEvent.suggestCommand("/msg " + senderName + " ")))
@@ -294,11 +305,23 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
                 .append(Component.text(message, NamedTextColor.WHITE));
 
         target.sendMessage(incoming);
-        sender.sendMessage(outgoing);
+        feedback(sender,outgoing);
         if (senderId != null) {
             lastIncoming.put(target.getUniqueId(), senderId);
             lastOutgoing.put(senderId, target.getUniqueId());
         }
+        },disconnected,1L)) disconnected.run();
+    }
+    private boolean currentSession(Player player) {
+        ChatSession session=sessions.get(player.getUniqueId());
+        return session!=null && session.player()==player;
+    }
+    private void feedback(CommandSender sender,Component message) {
+        if (!isEnabled()) return;
+        if (sender instanceof Player player) player.getScheduler().execute(this,() -> {
+            if (currentSession(player) && player.isOnline()) player.sendMessage(message);
+        },null,1L);
+        else getServer().getGlobalRegionScheduler().execute(this,() -> sender.sendMessage(message));
     }
 
     private boolean handleIgnore(CommandSender sender, String[] args, IgnoreType type) {
@@ -486,8 +509,10 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
 
     private boolean handleAdmin(CommandSender sender, String[] args) {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-            reloadPluginConfiguration();
-            sender.sendMessage(success("NordChat configuration reloaded."));
+            getServer().getGlobalRegionScheduler().execute(this,() -> {
+                reloadPluginConfiguration();
+                feedback(sender,success("NordChat configuration reloaded."));
+            });
         } else {
             sender.sendMessage(error("Usage: /nordchat reload"));
         }

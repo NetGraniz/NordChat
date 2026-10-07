@@ -2,6 +2,7 @@ name: NordChat
 version: '${project.version}'
 main: com.nordfjell.nordchat.NordChatPlugin
 api-version: '26.2'
+folia-supported: true
 author: Nord Fjell
 description: Lightweight 2b2t-inspired chat controls for Nord Fjell.
 

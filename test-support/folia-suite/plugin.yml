@@ -1,0 +1,10 @@
+name: NordSuiteTest
+version: '1'
+main: dev.nordfjell.tests.NordSuiteTest
+api-version: '26.2'
+folia-supported: true
+depend: [NordChat, NordFilter, NordCommands, NordDeaths, NordHomes, NordPets, NordPhantoms]
+loadbefore: [NordStatus]
+commands:
+  nsuite:
+    description: Isolated synthetic tests, console only; never deploy to production

@@ -1,9 +1,11 @@
-# NordChat
+# NordChat 0.2.0
+
+One release JAR for Paper 26.2 and Folia 26.2: [compatibility notes](FOLIA.md).
 
 Release build and installation requirements: see [BUILDING.md](BUILDING.md).
 Version 0.1.5 fixes preference loading after restart; see [CHANGELOG.md](CHANGELOG.md).
 
-Lightweight Paper 26.2 chat controls built for Nord Fjell. It has no PacketEvents,
+Lightweight Paper/Folia 26.2 chat controls built for Nord Fjell. It has no PacketEvents,
 ProtocolLib, Vault, LuckPerms API, database, metrics, update checker, or network calls.
 
 ## Player commands

@@ -8,14 +8,14 @@ folder, private configuration, prebuilt old plugin, or machine-specific path is 
 
 From this project's root, run `mvn clean verify`, or on PowerShell run
 `./build.ps1`. The wrapper accepts `-MavenCommand /path/to/mvn`.
-The JAR is `target/NordChat-0.1.5.jar`.
+The JAR is `target/NordChat-0.2.0.jar`.
 Existing main-based regression checks are run by the JUnit adapter with assertions enabled.
 
 
 Only plugin metadata resources are filtered for the release version. Configuration
 templates are copied unchanged. API libraries are provided by Paper and
 are not bundled. The build pins Paper API 26.2 build 129 rather than depending on
-a live server's library directory. This release requires JDK 25 and targets Paper 26.2.
+a live server's library directory. This release requires JDK 25 and supports Paper 26.2 and Folia 26.2 with the same JAR.
 
 The older README and test-support fixtures may describe historical local
 integration environments. BUILDING.md and pom.xml define the release build;
