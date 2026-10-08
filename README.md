@@ -1,49 +1,44 @@
 # NordChat 0.2.0
 
-One release JAR for Paper 26.2 and Folia 26.2: [compatibility notes](FOLIA.md).
+Chat controls and private messaging for Paper 26.2 and Folia 26.2, Java 25. Both platforms use the same JAR from `main`.
 
-Release build and installation requirements: see [BUILDING.md](BUILDING.md).
-Version 0.1.5 fixes preference loading after restart; see [CHANGELOG.md](CHANGELOG.md).
+NordChat uses Paper's chat renderer. It has no external runtime plugin dependency, database, telemetry, update checker or network requests. A single coalescing worker saves player preferences.
 
-Lightweight Paper/Folia 26.2 chat controls built for Nord Fjell. It has no PacketEvents,
-ProtocolLib, Vault, LuckPerms API, database, metrics, update checker, or network calls.
+## Commands and permissions
 
-## Player commands
+| Command | Permission | Default |
+| --- | --- | --- |
+| `/msg <player> <message>` (`/whisper`, `/pm`, `/w`) | `nordchat.msg` | Everyone |
+| `/reply <message>` (`/r`), reply to the last incoming message | `nordchat.reply` | Everyone |
+| `/last <message>`, message the last outgoing recipient | `nordchat.last` | Everyone |
+| `/ignore <player>`, toggle an ignore that expires after the configured number of days | `nordchat.ignore` | Everyone |
+| `/ignorehard <player>`, toggle a persistent ignore | `nordchat.ignorehard` | Everyone |
+| `/ignorelist`, list entries with clickable removal | `nordchat.ignorelist` | Everyone |
+| `/ignoredeathmsgs <player>` | `nordchat.ignoredeathmsgs` | Everyone |
+| `/togglechat` | `nordchat.togglechat` | Everyone |
+| `/toggleprivatemsgs` | `nordchat.toggleprivatemsgs` | Everyone |
+| `/toggledeathmsgs`, change the current session | `nordchat.toggledeathmsgs` | Everyone |
+| `/toggledeathmsgshard`, save the preference | `nordchat.toggledeathmsgshard` | Everyone |
+| `/kill`, kill only yourself; arguments are rejected | `nordchat.kill` | Everyone |
+| `/nordchat reload` | `nordchat.admin` | Operators |
 
-- `/msg`, `/whisper`, `/pm`, `/w`
-- `/r`, `/reply` — last incoming sender
-- `/last` — last outgoing recipient
-- `/ignore` — temporary ignore, expiring after the configured number of days
-- `/ignorehard` — persistent ignore
-- `/ignorelist` — clickable removal list
-- `/ignoredeathmsgs`
-- `/togglechat`
-- `/toggleprivatemsgs`
-- `/toggledeathmsgs` — session only
-- `/toggledeathmsgshard` — persistent
-- `/kill` — kills only the player who runs it; arguments are rejected
+## Permissions
 
-`/l` is intentionally not registered because AuthMe uses it as an alias for `/login`.
-Administrators can still use the namespaced vanilla command `/minecraft:kill`.
-A queue command is not included.
+The table above lists every registered permission. Explicitly deny a player permission to disable that feature; allowlisting a command in a command filter does not grant its permission.
 
-## Build
+NordChat does not register `/l`, which avoids a conflict with login aliases. Administrators who need vanilla targeting must use `/minecraft:kill` with its separate vanilla permission. No queue command is registered.
 
-Run `mvn clean verify` or `./build.ps1` with Maven 3.9+ and JDK 25.
-The build resolves its pinned API dependencies from Maven repositories and creates
-`target/NordChat-0.1.5.jar`; no live server or old local fixture is required.
-NordChat uses Paper's chat renderer and one coalescing preference-storage worker.
+## Build and installation
 
-## Installation
+Use Maven 3.9+ and JDK 25:
 
-1. Stop the server.
-2. Remove other plugins that own the same chat commands, such as SendMSG.
-3. Copy the JAR to the server's `plugins` directory.
-4. Start the server normally. Do not use `/reload`.
-5. Add the commands to CommandWhitelist if command filtering is enabled.
+```text
+mvn clean verify
+```
 
-For updates, back up the existing JAR, configuration and `plugins/NordChat/players.yml`.
-Install only one NordChat JAR. Keep the existing configuration and player store;
-0.1.5 reads legacy empty-list aliases without resetting or rewriting settings at startup.
-Do not delete `players.yml` to fix an alias-limit error.
+On PowerShell, `./build.ps1` runs the release build. The output is `target/NordChat-0.2.0.jar`. See [BUILDING.md](BUILDING.md) and [FOLIA.md](FOLIA.md).
+
+Stop the server before installation. Remove conflicting command owners, install one NordChat JAR and restart normally; do not use `/reload`. Add the player commands you want to expose to your command filter.
+
+Back up the existing JAR and retain `config.yml` and `plugins/NordChat/players.yml`. The 0.1.5 update accepts legacy empty alias lists without resetting preferences or rewriting installed configuration. Do not delete `players.yml` to fix an alias-limit error. See [CHANGELOG.md](CHANGELOG.md) for that preference-loading fix.
 
