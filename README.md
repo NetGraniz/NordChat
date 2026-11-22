@@ -1,4 +1,4 @@
-# NordChat 0.2.0
+# NordChat 0.3.0
 
 Chat controls and private messaging for Paper 26.2 and Folia 26.2, Java 25. Both platforms use the same JAR from `main`.
 
@@ -36,9 +36,9 @@ Use Maven 3.9+ and JDK 25:
 mvn clean verify
 ```
 
-On PowerShell, `./build.ps1` runs the release build. The output is `target/NordChat-0.2.0.jar`. See [BUILDING.md](BUILDING.md) and [FOLIA.md](FOLIA.md).
+On PowerShell, `./build.ps1` runs the release build. The output is `target/NordChat-0.3.0.jar`. See [BUILDING.md](BUILDING.md) and [FOLIA.md](FOLIA.md).
 
 Stop the server before installation. Remove conflicting command owners, install one NordChat JAR and restart normally; do not use `/reload`. Add the player commands you want to expose to your command filter.
 
-Back up the existing JAR and retain `config.yml` and `plugins/NordChat/players.yml`. The 0.1.5 update accepts legacy empty alias lists without resetting preferences or rewriting installed configuration. Do not delete `players.yml` to fix an alias-limit error. See [CHANGELOG.md](CHANGELOG.md) for that preference-loading fix.
+Retain `config.yml` and `plugins/NordChat/players.yml` during the first 0.3.0 start. NordChat imports the legacy file once into `players.db` in a single transaction and records a migration marker. Runtime reads use an in-memory snapshot; changed players are committed incrementally in background SQLite transactions, so the whole roster is no longer rewritten after every change. Keep the legacy file until the imported row counts have been verified.
 

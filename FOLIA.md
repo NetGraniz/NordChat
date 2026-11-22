@@ -1,6 +1,6 @@
-# Paper / Folia compatibility — 0.2.0
+# Paper / Folia compatibility — 0.3.0
 
-Use `NordChat-0.2.0.jar` on either platform with JDK 25. Entity/global scheduler APIs support both platforms; no separate branch is needed.
+Use `NordChat-0.3.0.jar` on either platform with JDK 25. Entity/global scheduler APIs support both platforms; no separate branch is needed.
 
 Private messages, feedback and death-message delivery use each recipient's entity scheduler. Public chat retains native AsyncChatEvent viewers/renderer; no packet interception. Preference storage formats are unchanged.
 

@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0
+
+- Move player names, visibility preferences, and ignore relations to indexed SQLite storage.
+- Import the existing `players.yml` once without modifying it.
+- Coalesce changed players into bounded background transactions instead of rewriting the entire roster.
+
 ## 0.1.5
 
 - Fix preference saves sharing a single empty ignore-list container and emitting excessive YAML aliases. A store with 1,000 players now round-trips through repeated save/restart checks without aliases.

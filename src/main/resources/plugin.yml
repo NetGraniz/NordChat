@@ -1,5 +1,7 @@
 name: NordChat
 version: '${project.version}'
+libraries:
+  - org.xerial:sqlite-jdbc:3.49.1.0
 main: com.nordfjell.nordchat.NordChatPlugin
 api-version: '26.2'
 folia-supported: true

@@ -8,7 +8,7 @@ folder, private configuration, prebuilt old plugin, or machine-specific path is 
 
 From this project's root, run `mvn clean verify`, or on PowerShell run
 `./build.ps1`. The wrapper accepts `-MavenCommand /path/to/mvn`.
-The JAR is `target/NordChat-0.2.0.jar`.
+The JAR is `target/NordChat-0.3.0.jar`.
 Existing main-based regression checks are run by the JUnit adapter with assertions enabled.
 
 

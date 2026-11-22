@@ -5,7 +5,7 @@ const root=path.resolve(process.argv[2]||''),java=process.argv[3],platform=proce
 assert(root.startsWith('C:\\Users\\artyo\\Documents\\Codex\\nord-suite-test-20261007-'))
 assert(['Paper','Folia'].includes(platform));assert(java);assert(!fs.existsSync(root),'Fresh fixture required')
 const projects=path.resolve(__dirname,'../..'),server=path.join(root,'server'),clients=[],handles=[],passed=[]
-const releases={NordChat:'NordChat-0.2.0.jar',NordFilter:'NordFilter-1.2.0.jar',NordCommandsPaper:'NordCommands-Paper-1.2.0.jar',NordDeaths:'NordDeaths-1.1.0.jar',NordHomes:'NordHomes-1.2.0.jar',NordPets:'NordPets-1.1.0.jar',NordPhantoms:'NordPhantoms-1.1.0.jar',NordStatus:'NordStatus-1.3.0.jar'}
+const releases={NordChat:'NordChat-0.3.0.jar',NordFilter:'NordFilter-1.3.0.jar',NordCommandsPaper:'NordCommands-Paper-1.2.0.jar',NordDeaths:'NordDeaths-1.1.0.jar',NordHomes:'NordHomes-1.4.0.jar',NordPets:'NordPets-1.1.0.jar',NordPhantoms:'NordPhantoms-1.1.0.jar',NordStatus:'NordStatus-1.3.0.jar'}
 let current
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))
 async function until(fn,label,timeout=30000){const start=Date.now();while(!await fn()){if(Date.now()-start>timeout)throw Error('Timeout: '+label);await sleep(100)}}

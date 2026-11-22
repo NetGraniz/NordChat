@@ -16,10 +16,11 @@ final class PlayerDataStore {
     PlayerDataStore(NordChatPlugin plugin) {
         this.plugin = plugin;
         PreferenceStorage initialized;
-        try { initialized = new PreferenceStorage(Path.of(plugin.getDataFolder().getPath(), "players.yml")); }
+        try { initialized = new PreferenceStorage(Path.of(plugin.getDataFolder().getPath(), "players.db"),
+                Path.of(plugin.getDataFolder().getPath(), "players.yml")); }
         catch (IOException e) {
-            plugin.getLogger().severe("Invalid/unreadable players.yml; chat and preference commands blocked. "
-                    + "Repair the file offline and restart. File not overwritten. " + e.getClass().getSimpleName());
+            plugin.getLogger().severe("Invalid/unreadable preference storage; chat and preference commands blocked. "
+                    + "Repair players.db or legacy players.yml offline and restart. " + e.getClass().getSimpleName());
             initialized = null;
         }
         storage = initialized;
@@ -78,6 +79,8 @@ final class PlayerDataStore {
             }
         } catch (InterruptedException e) { Thread.currentThread().interrupt(); writer.shutdownNow(); }
         if (storage.pending() != 0) plugin.getLogger().severe("Unsaved preference changes remain: " + storage.pending());
+        try { storage.close(); }
+        catch (IOException e) { plugin.getLogger().severe("Unable to close players.db: " + e.getClass().getSimpleName()); }
     }
 }
 
