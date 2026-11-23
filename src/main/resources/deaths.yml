@@ -1,0 +1,31 @@
+# A random line is selected from the matching category.
+# Available placeholders: {player} and {killer}.
+# Keep the lists short; NordDeaths falls back to generic when a list is empty.
+messages:
+  player:
+    - '{player} picked the wrong fight with {killer}.'
+    - '{killer} ended {player}''s journey.'
+  mob:
+    - '{player} was torn apart by {killer}.'
+    - '{player} underestimated {killer}.'
+  fall:
+    - '{player} hit the ground too hard.'
+    - '{player} discovered gravity.'
+    - '{player} sprained their entire body and instantly died.'
+  fire:
+    - '{player} burned to death.'
+  lava:
+    - '{player} tried to swim in lava.'
+  drowning:
+    - '{player} ran out of air.'
+  explosion:
+    - '{player} was blown to pieces.'
+  void:
+    - '{player} disappeared into the void.'
+  suffocation:
+    - '{player} suffocated in a wall.'
+  freezing:
+    - '{player} froze to death.'
+  generic:
+    - '{player} died.'
+    - '{player} met an unfortunate end.'
