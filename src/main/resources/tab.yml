@@ -1,0 +1,5 @@
+# MiniMessage formatting is supported.
+header: '<dark_green><bold>Minecraft server</bold></dark_green>'
+footer: '<gray><tps> tps  -  <online> players online  -  <ping> ping</gray>'
+update-interval-ticks: 40
+plain-player-names: true

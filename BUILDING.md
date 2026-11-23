@@ -11,4 +11,4 @@ Run:
 .\build.ps1 -MavenCommand "C:\path\to\mvn.cmd"
 ```
 
-The script runs `mvn clean verify`, checks the exact release JAR, and validates `plugin.yml`. The production artifact is `target/NordChat-0.4.0.jar`.
+The script runs `mvn clean verify`, checks the exact release JAR, and validates `plugin.yml`. The production artifact is `target/NordChat-0.5.0.jar`.

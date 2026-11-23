@@ -71,6 +71,10 @@ commands:
     description: Reload integrated death messages.
     usage: /norddeaths reload
     permission: norddeaths.admin
+  nordtab:
+    description: Reload integrated TAB presentation.
+    usage: /nordtab reload
+    permission: nordtab.admin
 
 permissions:
   nordchat.msg:
@@ -105,5 +109,7 @@ permissions:
     description: Bypass language, spam, word and mute checks.
     default: op
   norddeaths.admin:
+    default: op
+  nordtab.admin:
     default: op
 
