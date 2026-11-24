@@ -16,3 +16,7 @@ Administration:
 - `/nordchat moderation reset <player>`
 
 Build with JDK 25 and Maven 3.9+ using `build.ps1`.
+
+## License
+
+Current development on `main` is licensed under [GNU GPL v3.0 only](LICENSE). The latest published release remains available under the MIT License stated on its release page.
