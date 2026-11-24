@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 import java.util.*;
 
 /** Immutable Aho-Corasick automaton: a normalized input is scanned once. */

@@ -61,20 +61,8 @@ commands:
     permission: nordchat.kill
   nordchat:
     description: NordChat administration.
-    usage: /nordchat reload
+    usage: /nordchat <reload|moderation>
     permission: nordchat.admin
-  nordfilter:
-    description: Inspect or manage the integrated chat filter.
-    usage: /nordfilter <status|unmute|reset|reload|health> [player]
-    permission: nordfilter.admin
-  norddeaths:
-    description: Reload integrated death messages.
-    usage: /norddeaths reload
-    permission: norddeaths.admin
-  nordtab:
-    description: Reload integrated TAB presentation.
-    usage: /nordtab reload
-    permission: nordtab.admin
 
 permissions:
   nordchat.msg:
@@ -103,13 +91,7 @@ permissions:
     default: true
   nordchat.admin:
     default: op
-  nordfilter.admin:
-    default: op
-  nordfilter.bypass:
+  nordchat.moderation.bypass:
     description: Bypass language, spam, word and mute checks.
-    default: op
-  norddeaths.admin:
-    default: op
-  nordtab.admin:
     default: op
 

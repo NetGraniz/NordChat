@@ -1,13 +1,5 @@
-# Paper / Folia compatibility — 0.3.0
+# Paper and Folia compatibility
 
-Use `NordChat-0.3.0.jar` on either platform with JDK 25. Entity/global scheduler APIs support both platforms; no separate branch is needed.
+NordChat 2.0.0 supports Paper and Folia on Java 25. Player-bound actions use entity schedulers, global coordination uses the global-region scheduler, and SQLite work runs on owned background executors without blocking region callbacks.
 
-Private messages, feedback and death-message delivery use each recipient's entity scheduler. Public chat retains native AsyncChatEvent viewers/renderer; no packet interception. Preference storage formats are unchanged.
-
-## Verification and limits
-
-Run `mvn clean verify`. The [isolated integration harness](https://github.com/NetGraniz/NordChat/tree/main/test-support) boots all eight adapted plugins together with synthetic loopback clients, separated regions, local HTTPS and synthetic data. Movement cancellation dispatches an owning-region PlayerMoveEvent, not real-client movement. Never install the helper JAR on a real server. The harness records runtime results outside the repository. This is not a 1000-player load test, a production database test or a guarantee for future Minecraft versions.
-
-## Updating
-
-Back up configuration and player data, stop the server, replace only this plugin JAR without duplicates, and preserve installed data. Do not overwrite working config with repository templates. This release does not migrate worlds or production data.
+Run `mvn clean verify` before deployment. Preserve the current `plugins/NordChat` directory and replace only the plugin JAR while the server is stopped.

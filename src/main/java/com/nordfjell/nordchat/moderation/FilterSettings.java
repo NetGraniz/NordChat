@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;

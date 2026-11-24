@@ -16,11 +16,10 @@ final class PlayerDataStore {
     PlayerDataStore(NordChatPlugin plugin) {
         this.plugin = plugin;
         PreferenceStorage initialized;
-        try { initialized = new PreferenceStorage(Path.of(plugin.getDataFolder().getPath(), "players.db"),
-                Path.of(plugin.getDataFolder().getPath(), "players.yml")); }
+        try { initialized = new PreferenceStorage(Path.of(plugin.getDataFolder().getPath(), "players.db")); }
         catch (IOException e) {
             plugin.getLogger().severe("Invalid/unreadable preference storage; chat and preference commands blocked. "
-                    + "Repair players.db or legacy players.yml offline and restart. " + e.getClass().getSimpleName());
+                    + "Repair players.db offline and restart. " + e.getClass().getSimpleName());
             initialized = null;
         }
         storage = initialized;

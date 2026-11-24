@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
@@ -11,16 +11,15 @@ import org.bukkit.event.*;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
-import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class NordFilterFeature implements Listener, CommandExecutor {
+public final class ModerationFeature implements Listener {
     private final JavaPlugin plugin;
-    public NordFilterFeature(JavaPlugin plugin){this.plugin=Objects.requireNonNull(plugin);}
+    public ModerationFeature(JavaPlugin plugin){this.plugin=Objects.requireNonNull(plugin);}
     private record ChatJob(Player player,Component message){}
     private record ReloadResult(FilterSettings settings,String error){}
     private static final int CHAT_CAPACITY=128,CHAT_BUDGET=16;
@@ -49,14 +48,14 @@ public final class NordFilterFeature implements Listener, CommandExecutor {
 
     public void enable(){
         directory=plugin.getDataFolder().toPath();
-        try{punishmentStore=new PunishmentStore(directory.resolve("punishments.db"),directory.resolve("data.yml"));}
+        try{punishmentStore=new PunishmentStore(directory.resolve("punishments.db"));}
         catch(IOException e){plugin.getLogger().severe("Invalid/unreadable punishment database; moderation fails closed. Repair offline/restart. "+e.getClass().getSimpleName());}
         try{settings=FilterSettings.load(directory);}
         catch(IOException e){plugin.getLogger().severe("Invalid moderation configuration; chat/PM blocked until valid reload. "+e.getClass().getSimpleName());}
         if(punishmentStore!=null){
             if(settings!=null)engine=new FilterEngine(punishmentStore,settings);
             writer=Executors.newSingleThreadScheduledExecutor(task->{
-                Thread thread=new Thread(task,"NordFilter-storage");thread.setDaemon(true);return thread;
+                Thread thread=new Thread(task,"NordChat-moderation-storage");thread.setDaemon(true);return thread;
             });
             writer.scheduleWithFixedDelay(new Runnable(){long nextCleanup;public void run(){
                 long wall=System.currentTimeMillis();FilterSettings current=settings;
@@ -74,8 +73,8 @@ public final class NordFilterFeature implements Listener, CommandExecutor {
         plugin.getServer().getPluginManager().registerEvents(this,plugin);
         pump=Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin,ignored -> tick(),1,1);
         accepting=true;
-        if(engine!=null)plugin.getLogger().info("NordFilter enabled: bounded entity-owned checks and atomic background persistence.");
-        else plugin.getLogger().severe("NordFilter started in fail-closed mode.");
+        if(engine!=null)plugin.getLogger().info("Moderation enabled: bounded entity-owned checks and atomic background persistence.");
+        else plugin.getLogger().severe("Moderation started in fail-closed mode.");
     }
     public void disable(){
         accepting=false;chatBridge.close();if(pump!=null)pump.cancel();reloadResults.clear();
@@ -144,7 +143,7 @@ public final class NordFilterFeature implements Listener, CommandExecutor {
         Player player=job.player();UUID id=player.getUniqueId();
         if(!accepting||sessions.get(id)!=player||!player.isOnline())return FilterEngine.Result.block("");
         FilterEngine.Result result=engine==null?FilterEngine.Result.block("Moderation is unavailable; please try later.")
-                :engine.inspect(id,player.hasPermission("nordfilter.bypass"),plainText.serialize(job.message()),System.currentTimeMillis(),System.nanoTime());
+                :engine.inspect(id,player.hasPermission("nordchat.moderation.bypass"),plainText.serialize(job.message()),System.currentTimeMillis(),System.nanoTime());
         if(!result.allowed()&&!result.message().isEmpty())notifyMain(player,result.message());
         return result;
     }
@@ -186,13 +185,13 @@ public final class NordFilterFeature implements Listener, CommandExecutor {
             OfflinePlayer cached=Bukkit.getOfflinePlayerIfCached(text);return cached==null?null:cached.getUniqueId();
         }
     }
-    @Override public boolean onCommand(@NotNull CommandSender sender,@NotNull Command command,@NotNull String label,@NotNull String[] args){
+    public boolean command(CommandSender sender, String[] args){
         if(sender instanceof Player player && !Bukkit.isOwnedByCurrentRegion(player)){plugin.getLogger().warning("Rejected off-region moderation command callback.");return true;}
-        if(!sender.hasPermission("nordfilter.admin")){
+        if(!sender.hasPermission("nordchat.admin")){
             sender.sendMessage(Component.text("You do not have permission.",NamedTextColor.RED));return true;
         }
         if(args.length==1&&args[0].equalsIgnoreCase("health")){
-            sender.sendMessage(Component.text("NordFilter: "+(engine!=null&&punishmentStore.available()?"ready":"blocked")
+            sender.sendMessage(Component.text("NordChat moderation: "+(engine!=null&&punishmentStore.available()?"ready":"blocked")
                     +", chat pending="+chatBridge.size()+", writes pending="+(punishmentStore==null?-1:punishmentStore.pendingCount())
                     +", problem="+(punishmentStore==null?"initialization failure":punishmentStore.problem())));return true;
         }
@@ -214,7 +213,7 @@ public final class NordFilterFeature implements Listener, CommandExecutor {
             sender.sendMessage(Component.text(accepted?"Change queued; existing mute remains until persisted. Verify with status."
                     :"Persistence capacity exceeded; change rejected.",accepted?NamedTextColor.YELLOW:NamedTextColor.RED));return true;
         }
-        sender.sendMessage(Component.text("Usage: /nordfilter <health|reload|status|unmute|reset> [player]"));return true;
+        sender.sendMessage(Component.text("Usage: /nordchat moderation <health|reload|status|unmute|reset> [player]"));return true;
     }
 }
 

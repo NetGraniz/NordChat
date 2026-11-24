@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-final class IntegratedFilterTest {
+final class IntegratedModerationTest {
     @TempDir Path directory;
 
     @Test

@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Consumer;

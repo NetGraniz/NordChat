@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 import java.io.*;
 import java.nio.*;
 import java.nio.charset.*;
@@ -22,7 +22,7 @@ final class SafeYaml {
             String text=StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                     .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(Files.readAllBytes(file))).toString();
             Object loaded=parser().load(text);
-            // Blank/comment-only legacy files are empty; explicit YAML null is corruption.
+            // Blank/comment-only files are empty; explicit YAML null is corruption.
             if(loaded==null&&parser().compose(new StringReader(text))==null)return Map.of();
             return map(loaded);
         }catch(IOException e){throw e;}catch(RuntimeException e){throw new IOException("Invalid YAML",e);}

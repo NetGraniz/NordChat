@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 import java.util.Locale;
 final class PrivateCommands{
     static String label(String raw){

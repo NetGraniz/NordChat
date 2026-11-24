@@ -1,4 +1,4 @@
-package com.nordfjell.nordfilter;
+package com.nordfjell.nordchat.moderation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,7 +10,6 @@ import java.util.*;
 final class PunishmentStore {
     static final int MAX_PENDING = 4096;
     static final PlayerState EMPTY = new PlayerState(0, 0, 0);
-    private static final String MIGRATION_KEY = "legacy_data_yml_v1";
 
     record PlayerState(int level, long muteUntil, long lastViolation) {
         PlayerState { if (level < 0 || muteUntil < 0 || lastViolation < 0) throw new IllegalArgumentException("Invalid punishment"); }
@@ -21,7 +20,7 @@ final class PunishmentStore {
         }
     }
     private record Change(PlayerState state) { }
-    private final Path database, legacyYaml;
+    private final Path database;
     private final Object pendingLock = new Object(), writerLock = new Object();
     private volatile Map<UUID, PlayerState> committed = Map.of();
     private final Map<UUID, Change> pending = new LinkedHashMap<>();
@@ -30,15 +29,13 @@ final class PunishmentStore {
     private boolean overflow, closed;
     private long retryAt;
 
-    PunishmentStore(Path database) throws IOException { this(database, null); }
-    PunishmentStore(Path database, Path legacyYaml) throws IOException {
+    PunishmentStore(Path database) throws IOException {
         this.database = database.toAbsolutePath().normalize();
-        this.legacyYaml = legacyYaml == null ? null : legacyYaml.toAbsolutePath().normalize();
         initializeAndLoad();
     }
     private void initializeAndLoad() throws IOException {
         try (Connection c = open()) {
-            initialize(c); migrateLegacy(c);
+            initialize(c);
             Map<UUID, PlayerState> loaded = new HashMap<>();
             try (Statement s = c.createStatement(); ResultSet r = s.executeQuery(
                     "SELECT player_uuid,level,mute_until,last_violation FROM punishments")) {
@@ -111,20 +108,5 @@ final class PunishmentStore {
     private static void initialize(Connection c)throws SQLException{try(Statement s=c.createStatement()){
         s.executeUpdate("CREATE TABLE IF NOT EXISTS punishments (player_uuid TEXT PRIMARY KEY, level INTEGER NOT NULL, mute_until INTEGER NOT NULL, last_violation INTEGER NOT NULL)");
         s.executeUpdate("CREATE INDEX IF NOT EXISTS punishments_mute_expiry ON punishments(mute_until)");
-        s.executeUpdate("CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
     }}
-    private void migrateLegacy(Connection c)throws SQLException,IOException{
-        if(legacyYaml==null)return;
-        try(PreparedStatement check=c.prepareStatement("SELECT 1 FROM metadata WHERE key=?")){check.setString(1,MIGRATION_KEY);try(ResultSet r=check.executeQuery()){if(r.next())return;}}
-        Map<?,?> root=SafeYaml.read(legacyYaml,true);for(Object key:root.keySet())if(!"players".equals(key))throw new IOException("Unknown punishment root");
-        Map<?,?> players=SafeYaml.section(root,"players");c.setAutoCommit(false);
-        try(PreparedStatement insert=c.prepareStatement("INSERT OR IGNORE INTO punishments(player_uuid,level,mute_until,last_violation) VALUES (?,?,?,?)")){
-            for(var entry:players.entrySet()){
-                UUID id=SafeYaml.uuid(entry.getKey());Map<?,?> value=SafeYaml.map(entry.getValue());
-                for(Object key:value.keySet())if(!Set.of("level","mute-until","last-violation").contains(key))throw new IOException("Unknown punishment field");
-                insert.setString(1,id.toString());insert.setInt(2,(int)SafeYaml.number(value,"level",0,0,Integer.MAX_VALUE));insert.setLong(3,SafeYaml.number(value,"mute-until",0,0,Long.MAX_VALUE));insert.setLong(4,SafeYaml.number(value,"last-violation",0,0,Long.MAX_VALUE));insert.addBatch();
-            }
-            insert.executeBatch();try(PreparedStatement marker=c.prepareStatement("INSERT INTO metadata(key,value) VALUES (?,?)")){marker.setString(1,MIGRATION_KEY);marker.setString(2,"complete");marker.executeUpdate();}c.commit();
-        }catch(SQLException|IOException|RuntimeException e){c.rollback();throw e;}finally{c.setAutoCommit(true);}
-    }
 }

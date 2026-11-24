@@ -1,6 +1,6 @@
 # A random line is selected from the matching category.
 # Available placeholders: {player} and {killer}.
-# Keep the lists short; NordDeaths falls back to generic when a list is empty.
+# Keep the lists short; the death-message component falls back to generic when a list is empty.
 messages:
   player:
     - '{player} picked the wrong fight with {killer}.'

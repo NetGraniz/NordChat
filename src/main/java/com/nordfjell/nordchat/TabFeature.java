@@ -13,8 +13,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,9 +20,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
-final class TabFeature implements Listener, CommandExecutor {
+final class TabFeature implements Listener {
     private final JavaPlugin plugin;
     private final Path config;
     private final MiniMessage mini = MiniMessage.miniMessage();
@@ -106,12 +103,6 @@ final class TabFeature implements Listener, CommandExecutor {
 
     @EventHandler public void join(PlayerJoinEvent event) { Bukkit.getGlobalRegionScheduler().execute(plugin, () -> start(event.getPlayer())); }
     @EventHandler public void quit(PlayerQuitEvent event) { UUID id=event.getPlayer().getUniqueId(); ScheduledTask task=tasks.remove(id); if(task!=null)task.cancel(); ownedNames.remove(id); }
-
-    @Override public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length == 1 && args[0].equalsIgnoreCase("reload")) requestReload(sender);
-        else sender.sendMessage(Component.text("Usage: /nordtab reload"));
-        return true;
-    }
 
     private void feedback(CommandSender sender, String message) {
         if (sender instanceof Player player) player.getScheduler().execute(plugin, () -> { if(player.isOnline())player.sendMessage(Component.text(message)); }, null, 1L);

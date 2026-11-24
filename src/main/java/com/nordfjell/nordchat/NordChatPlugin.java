@@ -24,12 +24,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.nordfjell.nordfilter.NordFilterFeature;
+import com.nordfjell.nordchat.moderation.ModerationFeature;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +46,7 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
 
     private PlayerDataStore dataStore;
     private DeathMessagesFeature deaths;
-    private NordFilterFeature filter;
+    private ModerationFeature moderation;
     private TabFeature tab;
     private record ChatSession(Player player, String name) {}
     private record KnownPlayer(UUID id, String name) {}
@@ -69,7 +67,7 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
         reloadPluginConfiguration();
         dataStore = new PlayerDataStore(this);
         deaths=new DeathMessagesFeature(this,getDataFolder().toPath().resolve("deaths.yml").toFile());deaths.load();
-        filter=new NordFilterFeature(this);filter.enable();
+        moderation=new ModerationFeature(this);moderation.enable();
         tab=new TabFeature(this,getDataFolder().toPath().resolve("tab.yml"));
         try{tab.enable();}catch(IOException error){throw new IllegalStateException("Could not initialize integrated TAB",error);}
 
@@ -87,7 +85,7 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
 
     @Override
     public void onDisable() {
-        if(filter!=null)filter.disable();
+        if(moderation!=null)moderation.disable();
         if(deaths!=null)deaths.close();
         if(tab!=null)tab.disable();
         if (dataStore != null) {
@@ -108,30 +106,13 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
             command.setExecutor(this);
             command.setTabCompleter(this);
         }
-        PluginCommand filterCommand=Objects.requireNonNull(getCommand("nordfilter"));filterCommand.setExecutor(filter);
-        PluginCommand deathCommand=Objects.requireNonNull(getCommand("norddeaths"));deathCommand.setExecutor((sender,command,label,args)->{
-            if(args.length==1&&args[0].equalsIgnoreCase("reload")){getServer().getGlobalRegionScheduler().execute(this,()->{deaths.load();feedback(sender,success("NordChat death messages reloaded."));});return true;}
-            sender.sendMessage(error("Usage: /norddeaths reload"));return true;
-        });
-        Objects.requireNonNull(getCommand("nordtab")).setExecutor(tab);
     }
 
     private void prepareComponentFiles(){
         try{
             Files.createDirectories(getDataFolder().toPath());
-            migrate("NordDeaths","config.yml","deaths.yml");
-            migrate("NordFilter","config.yml","filter.yml");
-            migrate("NordFilter","banwords.yml","banwords.yml");
-            migrate("NordFilter","punishments.db","punishments.db");
-            migrate("NordFilter","data.yml","data.yml");
-            migrate("NordTab","config.yml","tab.yml");
             for(String resource:List.of("deaths.yml","filter.yml","banwords.yml","tab.yml"))if(!Files.exists(getDataFolder().toPath().resolve(resource)))saveResource(resource,false);
         }catch(IOException e){throw new IllegalStateException("Could not prepare integrated NordChat data",e);}
-    }
-    private void migrate(String directory,String source,String target)throws IOException{
-        Path destination=getDataFolder().toPath().resolve(target);if(Files.exists(destination))return;
-        Path old=getDataFolder().toPath().getParent().resolve(directory).resolve(source);
-        if(Files.isRegularFile(old))Files.copy(old,destination,StandardCopyOption.COPY_ATTRIBUTES);
     }
 
     private void reloadPluginConfiguration() {
@@ -555,12 +536,15 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
             getServer().getGlobalRegionScheduler().execute(this,() -> {
                 reloadPluginConfiguration();
                 deaths.load();
-                if(filter!=null)filter.requestReload(sender);
+                if(moderation!=null)moderation.requestReload(sender);
                 if(tab!=null)tab.requestReload(sender);
                 feedback(sender,success("NordChat configuration reloaded."));
             });
+        } else if (args.length >= 2 && args[0].equalsIgnoreCase("moderation")) {
+            String[] moderationArgs = java.util.Arrays.copyOfRange(args, 1, args.length);
+            return moderation.command(sender, moderationArgs);
         } else {
-            sender.sendMessage(error("Usage: /nordchat reload"));
+            sender.sendMessage(error("Usage: /nordchat <reload|moderation>"));
         }
         return true;
     }
@@ -614,7 +598,10 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
         String name = command.getName().toLowerCase(Locale.ROOT);
         if (!sender.hasPermission(name.equals("nordchat") ? "nordchat.admin" : "nordchat." + name)) return List.of();
         if (name.equals("nordchat") && args.length == 1) {
-            return prefixMatches(args[0], List.of("reload"));
+            return prefixMatches(args[0], List.of("reload", "moderation"));
+        }
+        if (name.equals("nordchat") && args.length == 2 && args[0].equalsIgnoreCase("moderation")) {
+            return prefixMatches(args[1], List.of("health", "reload", "status", "unmute", "reset"));
         }
         if (PLAYER_TARGET_COMMANDS.contains(name) && args.length == 1) {
             List<String> names = new ArrayList<>();
