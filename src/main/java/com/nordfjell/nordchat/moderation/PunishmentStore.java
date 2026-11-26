@@ -77,7 +77,6 @@ final class PunishmentStore {
         return changed;
     }
     int pendingCount(){synchronized(pendingLock){return pending.size();}}
-    int recordCount(){return committed.size();}
     boolean known(UUID id){synchronized(pendingLock){return committed.containsKey(id)||pending.containsKey(id);}}
     String problem(){return problem;}
     boolean available(){synchronized(pendingLock){return !closed&&problem.isEmpty();}}

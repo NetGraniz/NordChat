@@ -42,7 +42,7 @@ public final class ModerationFeature implements Listener {
     public void requestReload(CommandSender sender){
         if(writer==null){sender.sendMessage(Component.text("Repair punishments.db offline and restart; reload cannot reset failed storage."));return;}
         if(!reloadPending.compareAndSet(false,true)){sender.sendMessage(Component.text("Reload already pending."));return;}
-        writer.execute(()->{ReloadResult result;try{result=new ReloadResult(FilterSettings.load(directory),null);}catch(IOException|RuntimeException e){result=new ReloadResult(null,e.getClass().getSimpleName());}if(accepting)reloadResults.offer(result);});
+        writer.execute(()->{ReloadResult result;try{result=new ReloadResult(FilterSettings.load(directory),null);}catch(IOException|RuntimeException e){result=new ReloadResult(null,e.getClass().getSimpleName());}if(accepting&&!reloadResults.offer(result)){reloadPending.set(false);plugin.getLogger().warning("Moderation reload result queue is full; reload was not applied.");}});
         sender.sendMessage(Component.text("NordChat filter reload queued. Check console/health for the result."));
     }
 

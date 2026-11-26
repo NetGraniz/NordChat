@@ -7,7 +7,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,9 +14,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 final class DeathMessagesFeature implements Listener {
     private static final long MAX_AGE=10_000_000_000L;
-    private final JavaPlugin plugin;private final File config;
+    private final File config;
     private volatile Map<String,List<String>> messages=Map.of();private final Map<UUID,RecentDamage> recent=new ConcurrentHashMap<>();
-    DeathMessagesFeature(JavaPlugin plugin,File config){this.plugin=plugin;this.config=config;}
+    DeathMessagesFeature(File config){this.config=config;}
     void load(){YamlConfiguration yaml=YamlConfiguration.loadConfiguration(config);Map<String,List<String>> next=new HashMap<>();var section=yaml.getConfigurationSection("messages");if(section!=null)for(String key:section.getKeys(false))next.put(key,List.copyOf(yaml.getStringList("messages."+key)));messages=Map.copyOf(next);}
     void close(){recent.clear();}
     @EventHandler(priority=EventPriority.MONITOR,ignoreCancelled=true)public void damage(EntityDamageEvent event){if(event.getEntity() instanceof Player player&&event.getFinalDamage()>0)recent.put(player.getUniqueId(),new RecentDamage(classify(event),System.nanoTime()));}

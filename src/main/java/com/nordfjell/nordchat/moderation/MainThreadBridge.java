@@ -1,6 +1,5 @@
 package com.nordfjell.nordchat.moderation;
 import java.util.concurrent.*;
-import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,9 +30,6 @@ final class MainThreadBridge<T,R>{
         ticket.cancel();ticket.release();return null;
     }
     int size(){return outstanding.size();}
-    void drain(int budget,long now,Function<T,R> action){
-        drainAsync(budget,now,ticket -> ticket.complete(action.apply(ticket.payload)));
-    }
     void drainAsync(int budget,long now,Consumer<Ticket<T,R>> action){
         for(int i=0;i<budget;i++){
             Ticket<T,R> ticket=queue.poll();if(ticket==null)return;

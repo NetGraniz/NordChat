@@ -22,10 +22,6 @@ final class PlayerPreferences {
         return chatVisible;
     }
 
-    void setChatVisible(boolean value) {
-        chatVisible = value;
-    }
-
     boolean arePrivateMessagesVisible() {
         return privateMessagesVisible;
     }
@@ -35,10 +31,6 @@ final class PlayerPreferences {
         return privateMessagesVisible;
     }
 
-    void setPrivateMessagesVisible(boolean value) {
-        privateMessagesVisible = value;
-    }
-
     boolean arePersistentDeathMessagesVisible() {
         return persistentDeathMessagesVisible;
     }
@@ -46,10 +38,6 @@ final class PlayerPreferences {
     boolean togglePersistentDeathMessagesVisible() {
         persistentDeathMessagesVisible = !persistentDeathMessagesVisible;
         return persistentDeathMessagesVisible;
-    }
-
-    void setPersistentDeathMessagesVisible(boolean value) {
-        persistentDeathMessagesVisible = value;
     }
 
     Map<UUID, Long> temporaryIgnores() {

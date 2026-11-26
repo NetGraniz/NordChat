@@ -2,7 +2,6 @@ package com.nordfjell.nordchat;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.chat.ChatRenderer;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -30,11 +29,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +63,7 @@ public final class NordChatPlugin extends JavaPlugin implements Listener, Comman
         prepareComponentFiles();
         reloadPluginConfiguration();
         dataStore = new PlayerDataStore(this);
-        deaths=new DeathMessagesFeature(this,getDataFolder().toPath().resolve("deaths.yml").toFile());deaths.load();
+        deaths=new DeathMessagesFeature(getDataFolder().toPath().resolve("deaths.yml").toFile());deaths.load();
         moderation=new ModerationFeature(this);moderation.enable();
         tab=new TabFeature(this,getDataFolder().toPath().resolve("tab.yml"));
         try{tab.enable();}catch(IOException error){throw new IllegalStateException("Could not initialize integrated TAB",error);}

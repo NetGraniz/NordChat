@@ -1,10 +1,10 @@
-# NordChat 2.0.0
+# NordChat 2.0.1
 
 NordChat provides chat, private messages, ignore lists, death messages, moderation, and tab-list presentation for Paper and Folia.
 
 Configuration is split by responsibility inside `plugins/NordChat`: `config.yml`, `deaths.yml`, `filter.yml`, `banwords.yml`, and `tab.yml`. Player preferences are stored in `players.db`; moderation state is stored in `punishments.db`.
 
-NordChat 2.0.0 reads only its current files and SQLite schema.
+NordChat 2.0.1 reads only its current files and SQLite schema.
 
 Administration:
 
